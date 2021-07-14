@@ -25,6 +25,8 @@ Data Tiering using two Atlas clusters can be an alternative when [Atlas Data Lak
   * Test
   * Hit the Save button on the bottom right corner.
 * The Atlas Trigger should now run every 2 minutes (or on a different interval depending on what you configured). See the [Trigger Logs](https://docs.mongodb.com/realm/logs/trigger/) for more information on how many documents were archived during each execution, as well as any potential warnings or errors.
+![Screenshot of Add Trigger screen](https://github.com/robbertkauffman/auto-archive-atlas-trigger/blob/92df1d9b86cda7310cf6cfd7a6c0e1dd17c997ad/add-trigger.png?raw=true)
+
 
 ### Configuring Federated Queries
 Federated Queries is provided by Atlas Data Lake. Even though you might not be storing any of your data in S3 through Data Lake or Online Archive, you will have to configure a Data Lake in order to be able to use Federated Queries for querying across 2 Atlas clusters.
@@ -44,3 +46,4 @@ Federated Queries is provided by Atlas Data Lake. Even though you might not be s
   * Hit *Save* in the bottom right corner.
 * Federated Queries should now be configured and ready to use.
 * Click *Connect* on the right to get the connection string to the Data Lake, and you can connect to the cluster using Compass, the MongoDB drivers, the mongo shell, etc. This is the connection string you will want to use whenever you want to do federated queries across the hot and cold Atlas clusters. You can still use the individual connection string of each cluster if you only need to query data of that individual cluster.
+![Screenshot of Add Trigger screen](https://github.com/robbertkauffman/auto-archive-atlas-trigger/blob/92df1d9b86cda7310cf6cfd7a6c0e1dd17c997ad/data-lake-configuration.png?raw=true)
