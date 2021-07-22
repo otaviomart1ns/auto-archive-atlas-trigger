@@ -28,26 +28,32 @@ exports = async function() {
   
   // TODO: check if dbs and collections exist
   
-  await deleteDocsInStaging(targetStagingCollection);
-  let docs = await findDocsToArchive(sourceCollection, query, limit);
-  // console.log(docs);
-  // console.log(JSON.stringify(docs));
+  // uncomment next line to enable test mode
+  // const testMode = true;
   
-  try {
-    if (docs.length > 0) {
-      await copyDocsToStaging(targetStagingCollection, docs);
-      for (i = 0; i < docs.length; i++) {
-        const doc = docs[i];
-        await publishDoc(targetCollection, doc);
-        await deleteDocument(sourceCollection, doc._id);
-        await deleteDocument(targetStagingCollection, doc._id);
+  if (typeof testMode !== 'undefined' && testMode) {
+    await findDocsToArchive(sourceCollection, query, limit);
+  } else {
+    await deleteDocsInStaging(targetStagingCollection);
+    let docs = await findDocsToArchive(sourceCollection, query, limit);
+    // console.log(docs);
+    // console.log(JSON.stringify(docs));
+
+    try {
+      if (docs.length > 0) {
+        await copyDocsToStaging(targetStagingCollection, docs);
+        for (i = 0; i < docs.length; i++) {
+          const doc = docs[i];
+          await publishDoc(targetCollection, doc);
+          await deleteDocument(sourceCollection, doc._id);
+          await deleteDocument(targetStagingCollection, doc._id);
+        }
       }
+    } catch (err) {
+      throw err;
     }
-  } catch (err) {
-    throw err;
+    console.log(`Successfully archived ${limit} documents`);
   }
-  
-  console.log(`Successfully archived ${limit} documents`);
   
   return true;
 };
