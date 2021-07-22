@@ -22,7 +22,7 @@ Data Tiering using two Atlas clusters can be an alternative when [Atlas Data Lak
     * Line 6: *collection*: name of collection that needs to be automatically archived.
     * Line 7: *dateField*: name of field that will be filtered on when querying for documents that need to be archived. Typically a date field.
     * Line 8: *archiveAfter*: maximum age of a document based on *dateField* to determine if a document should be archived. If you want to archive based on something other than date, please modify lines 21-24.
-  * Test
+  * Test the trigger by uncommenting line 32 and clicking the *Run* button. In test mode it will only find the to be archived documents but not archive them. Don't forget to comment line 32 after the test completed successfully.
   * Hit the Save button on the bottom right corner.
 * The Atlas Trigger should now run every 2 minutes (or on a different interval depending on what you configured). See the [Trigger Logs](https://docs.mongodb.com/realm/logs/trigger/) for more information on how many documents were archived during each execution, as well as any potential warnings or errors.
 ![Screenshot of Add Trigger screen](https://github.com/robbertkauffman/auto-archive-atlas-trigger/blob/92df1d9b86cda7310cf6cfd7a6c0e1dd17c997ad/add-trigger.png?raw=true)
