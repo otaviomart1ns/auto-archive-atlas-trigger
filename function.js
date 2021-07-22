@@ -34,25 +34,30 @@ exports = async function() {
   if (typeof testMode !== 'undefined' && testMode) {
     await findDocsToArchive(sourceCollection, query, limit);
   } else {
-    await deleteDocsInStaging(targetStagingCollection);
-    let docs = await findDocsToArchive(sourceCollection, query, limit);
-    // console.log(docs);
-    // console.log(JSON.stringify(docs));
-
+    let docs = [];
     try {
-      if (docs.length > 0) {
-        await copyDocsToStaging(targetStagingCollection, docs);
-        for (i = 0; i < docs.length; i++) {
-          const doc = docs[i];
-          await publishDoc(targetCollection, doc);
-          await deleteDocument(sourceCollection, doc._id);
-          await deleteDocument(targetStagingCollection, doc._id);
-        }
+      // query any remaining documents in staging collection first
+      // in case a previous run didn't complete fully
+      docs = await findDocsToArchive(targetStagingCollection, {}, limit);
+      // if nothing returned, just do a regular run by querying source and copying to staging
+      if (docs.length == 0) {
+        docs = await findDocsToArchive(sourceCollection, query, limit);
+        docs.length > 0 && await copyDocsToStaging(targetStagingCollection, docs);
+      } else {
+        console.log(`Found ${docs.length} documents in staging collection. Previous run likely didn't complete. `
+                    + `Will retry publishing, might see duplicate key errors if already published before.`);
+      }
+      
+      for (const doc of docs) {
+        // console.log(doc._id);
+        await publishDoc(targetCollection, doc);
+        await deleteDocument(sourceCollection, doc._id);
+        await deleteDocument(targetStagingCollection, doc._id);
       }
     } catch (err) {
       throw err;
     }
-    console.log(`Successfully archived ${limit} documents`);
+    console.log(`Archived ${docs.length} documents`);
   }
   
   return true;
@@ -78,7 +83,7 @@ async function deleteDocsInStaging(collection) {
 async function findDocsToArchive(collection, query, limit) {
   return collection.find(query).limit(limit).toArray()
   .then(docs => {
-    console.log(`Found ${docs.length} documents to be archived`);
+    docs.length > 0 && console.log(`Found ${docs.length} documents to be archived`);
     return docs;
   })
   .catch(err => console.error(`Failed to query to be archived documents: ${err}`));
@@ -88,7 +93,7 @@ async function copyDocsToStaging(collection, docs) {
   return collection.insertMany(docs)
   .then(result => {
     if (result && result.insertedIds.length === docs.length) {
-      console.log(`Successfully copied ${result.insertedIds.length} documents to staging!`);
+      console.log(`Successfully copied ${result.insertedIds.length} documents to staging`);
       return true;
     } else if (result && result.insertedIds.length > 0) {
       console.warn("Copied some, not all, documents to staging")
@@ -135,7 +140,11 @@ async function deleteDocument(collection, id) {
     return false;
   })
   .catch(err => {
-    console.error(`Delete on source failed with error: ${err}`);
-    throw err;
+    if (err instanceof FunctionError && err.message.startsWith("Could not find document to delete")) {
+      console.warn(`Could not find document to delete with id ${id} , continuing: ${err.message}`);
+    } else {
+      console.error(`Delete on source failed with error: ${err}`);
+      throw err;
+    }
   });
 }
