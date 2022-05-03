@@ -3,7 +3,7 @@ exports = async function() {
   const sourceCluster = "hot-cluster"; // service name of source/hot cluster
   const targetCluster = "warm-cluster"; // service name of target/warm/cold cluster
   const db = "sample_supplies";
-  const collection = "sales";
+  const collName = "sales";
   const dateField = "saleDate"; // field name for date field that will be queried on
   const archiveAfter = 60; // number of days after which to archive
   
@@ -22,7 +22,7 @@ exports = async function() {
   archiveDate.setDate(-archiveAfter); // change number of days
   // const archiveDate = new Date("2018-01-01T00:00:00.000+00:00"); // uncomment when using with sample dataset
   
-  const query = { [dateField]: { $gt: archiveDate }};
+  const query = { [dateField]: { $lt: archiveDate }};
   
   // =================================
   
